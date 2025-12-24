@@ -26,7 +26,17 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'App Name',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w900
+          ),
+          ),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
       body: Center(
         child: Text(
           'Hello Demo!',

@@ -18,6 +18,12 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Create .env file from Secrets
+        run: |
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+        working-directory: demo
+
       # 2. demo 폴더로 이동하여 패키지 설치 및 웹 빌드
       - name: Build Flutter Web
         run: |

@@ -6,7 +6,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // CORS 프리플라이트 요청 처리
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -14,12 +13,11 @@ serve(async (req) => {
   try {
     const { query } = await req.json()
     
-    // Supabase 환경변수에서 키 가져오기
     const clientId = Deno.env.get('NAVER_CLIENT_ID')
     const clientSecret = Deno.env.get('NAVER_CLIENT_SECRET')
 
     const response = await fetch(
-      `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(query)}`,
+      `https://openapi.naver.com/v1/search/book.json?query=${encodeURIComponent(query)}&display=20`,
       {
         headers: {
           'X-Naver-Client-Id': clientId!,

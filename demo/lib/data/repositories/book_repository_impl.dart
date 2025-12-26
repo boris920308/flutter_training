@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../domain/entities/book.dart';
 import '../../domain/repositories/book_repository.dart';
 
 class BookRepositoryImpl implements BookRepository {
   final Dio _dio;
-  final String _clientId = '';
-  final String _clientSecret = '';
+  final String _clientId = dotenv.env['NAVER_CLIENT_ID'] ?? '';
+  final String _clientSecret = dotenv.env['NAVER_CLIENT_SECRET'] ?? '';
 
   BookRepositoryImpl(this._dio);
 

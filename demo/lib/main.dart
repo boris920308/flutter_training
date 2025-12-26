@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-
-import 'domain/presentation/screens/search_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'presentation/screens/search_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+      const ProviderScope(
+        child: MyApp(),
+      )
+  );
 }
 
 class MyApp extends StatelessWidget {

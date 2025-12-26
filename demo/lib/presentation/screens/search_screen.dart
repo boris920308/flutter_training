@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Riverpod 임포트
+import '../../domain/entities/book.dart';
+import '../providers/book_provider.dart'; // 생성한 Provider 임포트
 
-import '../../../core/mocks/mock_books.dart';
-
-class BookSearchScreen extends StatefulWidget {
+// 1. ConsumerWidget으로 변경하여 Provider에 접근합니다.
+class BookSearchScreen extends ConsumerWidget {
   const BookSearchScreen({super.key});
 
   @override
-  State<BookSearchScreen> createState() => _BookSearchScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 2. Provider로부터 실시간 검색 결과 상태를 읽어옵니다.
+    final bookAsync = ref.watch(bookListProvider);
 
-class _BookSearchScreenState extends State<BookSearchScreen> {
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    // 웹과 모바일 대응을 위한 반응형 레이아웃 계산
     final screenWidth = MediaQuery.of(context).size.width;
     final isWeb = screenWidth > 600;
 
@@ -30,19 +27,25 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // 1. 검색창 영역
-              _buildSearchBar(),
+              // 3. 검색창 위젯 (ref를 넘겨줌)
+              _buildSearchBar(ref),
               const SizedBox(height: 20),
 
-              // 2. 결과 리스트 영역
+              // 4. API 상태(로딩, 에러, 데이터)에 따른 화면 처리
               Expanded(
-                child: ListView.separated(
-                  itemCount: mockBooks.length,
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemBuilder: (context, index) {
-                    final book = mockBooks[index];
-                    return _buildBookTile(book);
-                  },
+                child: bookAsync.when(
+                  // 데이터 로드 성공 시
+                  data: (books) => books.isEmpty
+                      ? const Center(child: Text('검색 결과가 없습니다.'))
+                      : ListView.separated(
+                    itemCount: books.length,
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemBuilder: (context, index) => _buildBookTile(books[index]),
+                  ),
+                  // 로딩 중일 때
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  // 에러 발생 시
+                  error: (err, stack) => Center(child: Text('에러 발생: $err')),
                 ),
               ),
             ],
@@ -52,32 +55,25 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
     );
   }
 
-  // 검색바 위젯 분리 (Single Responsibility)
-  Widget _buildSearchBar() {
+  // 검색바: 엔터를 치면 searchQueryProvider의 상태를 업데이트합니다.
+  Widget _buildSearchBar(WidgetRef ref) {
     return TextField(
-      controller: _controller,
       decoration: InputDecoration(
         hintText: '책 제목, 저자명을 입력하세요',
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () => _controller.clear(),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Colors.grey[100],
       ),
       onSubmitted: (value) {
-        print('검색 실행: $value');
-        // 나중에 여기서 API 호출 로직 연결
+        // 검색어 상태를 변경하면 bookListProvider가 자동으로 API를 다시 호출합니다.
+        ref.read(searchQueryProvider.notifier).state = value;
       },
     );
   }
 
-  // 도서 아이템 위젯 분리
-  Widget _buildBookTile(MockBook book) {
+  // 도서 아이템: MockBook 대신 실제 Book 엔티티를 사용합니다.
+  Widget _buildBookTile(Book book) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -87,34 +83,27 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
               book.image,
-              width: 80,   // 성공 시 이미지 너비
-              height: 110, // 성공 시 이미지 높이
+              width: 80,
+              height: 110,
               fit: BoxFit.cover,
+              // 이전과 동일한 로딩/에러 처리 로직
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
-                // 로딩 중에도 크기를 고정합니다.
                 return Container(
-                  width: 80,
-                  height: 110,
-                  color: Colors.grey[200],
+                  width: 80, height: 110, color: Colors.grey[200],
                   child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                 );
               },
-              // 🌟 핵심 수정: 에러 시에도 크기를 고정합니다. 🌟
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  width: 80,   // 여기도 똑같이 고정
-                  height: 110, // 여기도 똑같이 고정
-                  color: Colors.grey[300], // 회색 배경
+                  width: 80, height: 110, color: Colors.grey[300],
                   alignment: Alignment.center,
-                  // 빨간색 에러 메시지 대신 깔끔한 아이콘으로 대체
                   child: const Icon(Icons.broken_image, color: Colors.grey),
                 );
               },
             ),
           ),
           const SizedBox(width: 16),
-          // 책 정보
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,10 +115,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  book.author,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
+                Text(book.author, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
                 const SizedBox(height: 8),
                 Text(
                   book.description,

@@ -83,14 +83,34 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 책 표지 이미지
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
               book.image,
-              width: 80,
-              height: 110,
+              width: 80,   // 성공 시 이미지 너비
+              height: 110, // 성공 시 이미지 높이
               fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                // 로딩 중에도 크기를 고정합니다.
+                return Container(
+                  width: 80,
+                  height: 110,
+                  color: Colors.grey[200],
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                );
+              },
+              // 🌟 핵심 수정: 에러 시에도 크기를 고정합니다. 🌟
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 80,   // 여기도 똑같이 고정
+                  height: 110, // 여기도 똑같이 고정
+                  color: Colors.grey[300], // 회색 배경
+                  alignment: Alignment.center,
+                  // 빨간색 에러 메시지 대신 깔끔한 아이콘으로 대체
+                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                );
+              },
             ),
           ),
           const SizedBox(width: 16),

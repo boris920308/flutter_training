@@ -7,7 +7,7 @@ class BookRepositoryImpl implements BookRepository {
   final Dio _dio;
 
   final String _supabaseUrl = 'https://jwradhdlfjgbmdwdwful.supabase.co';
-  final String _anonKey = 'sb_publishable_Mj3WbWx0008XFrGizfPE-g_EbkGMrqK';
+  final String _anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3cmFkaGRsZmpnYm1kd2R3ZnVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjAyMzYsImV4cCI6MjA4MjI5NjIzNn0.BCnvQIiMGYJBd4EKQqeDMI_OerrtDroqK5vDH2hLSTg';
 
   BookRepositoryImpl(this._dio);
 

@@ -20,28 +20,30 @@ class BookSearchScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Center(
-        child: Container(
-          constraints: BoxConstraints(maxWidth: isWeb ? 800 : double.infinity),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _buildSearchBar(ref),
-              const SizedBox(height: 20),
-              Expanded(
-                child: bookAsync.when(
-                  data: (books) => books.isEmpty
-                      ? const Center(child: Text('검색 결과가 없습니다.'))
-                      : ListView.separated(
-                    itemCount: books.length,
-                    separatorBuilder: (context, index) => const Divider(),
-                    itemBuilder: (context, index) => _buildBookTile(books[index]),
+      body: SelectionArea(
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: isWeb ? 800 : double.infinity),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildSearchBar(ref),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: bookAsync.when(
+                    data: (books) => books.isEmpty
+                        ? const Center(child: Text('검색 결과가 없습니다.'))
+                        : ListView.separated(
+                      itemCount: books.length,
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) => _buildBookTile(books[index]),
+                    ),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(child: Text('에러 발생: $err')),
                   ),
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(child: Text('에러 발생: $err')),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
